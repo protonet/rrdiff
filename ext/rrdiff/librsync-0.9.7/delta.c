@@ -121,6 +121,10 @@
 /* used by rdiff, but now redundant */
 int rs_roll_paranoia = 0;
 
+/* thieso@gmail.com "fix" static link */
+#define inline 
+
+
 static rs_result rs_delta_s_scan(rs_job_t *job);
 static rs_result rs_delta_s_flush(rs_job_t *job);
 static rs_result rs_delta_s_end(rs_job_t *job);
