@@ -7,6 +7,8 @@ end
 LIBDIR      = RbConfig::CONFIG['libdir']
 INCLUDEDIR  = RbConfig::CONFIG['includedir']
 
+$LDFLAGS << "librsync-0.9.7/.libs/librsync.a"
+
 HEADER_DIRS = [
   'librsync-0.9.7',
   '/usr/local/include',
@@ -23,7 +25,6 @@ LIB_DIRS = [
 
 dir_config('rrdiff', HEADER_DIRS, LIB_DIRS)
 
-have_library('rsync')
 have_header('librsync.h')
 
 create_makefile('rrdiff/rrdiff')
