@@ -2,8 +2,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <librsync.h>
+#include <limits.h>
 
 VALUE RRDiff = Qnil;
+
+static FILE *my_fopen(const char *path, const char *mode);
+
+static FILE *my_fopen(const char *path, const char *mode)
+{
+    FILE *result = fopen(path, mode);
+    char buf[1024];
+
+    if (! result) {
+        snprintf(buf, sizeof(buf), "fopen(\"%s\", \"%s\")", path, mode);
+        rb_sys_fail(buf);
+    }
+
+    return result;
+}
 
 static VALUE rrdiff_signature(VALUE mod, VALUE old_file, VALUE sig_file)
 {
@@ -12,8 +28,8 @@ static VALUE rrdiff_signature(VALUE mod, VALUE old_file, VALUE sig_file)
     rs_result result;
     rs_stats_t stats;
 
-    basis = fopen(StringValuePtr(old_file), "rb");
-    signature = fopen(StringValuePtr(sig_file), "wb");
+    basis = my_fopen(StringValuePtr(old_file), "rb");
+    signature = my_fopen(StringValuePtr(sig_file), "wb");
 
     result = rs_sig_file(basis, signature, RS_DEFAULT_BLOCK_LEN, RS_DEFAULT_STRONG_LEN, &stats);
 
@@ -31,9 +47,9 @@ static VALUE rrdiff_delta(VALUE mod, VALUE new_file, VALUE sig_file, VALUE delta
     rs_stats_t stats;
     rs_signature_t *sig;
 
-    newfile = fopen(StringValuePtr(new_file), "rb");
-    sigfile = fopen(StringValuePtr(sig_file), "rb");
-    deltafile = fopen(StringValuePtr(delta_file), "wb");
+    newfile = my_fopen(StringValuePtr(new_file), "rb");
+    sigfile = my_fopen(StringValuePtr(sig_file), "rb");
+    deltafile = my_fopen(StringValuePtr(delta_file), "wb");
 
     if((result = rs_loadsig_file(sigfile, &sig, &stats)) != RS_DONE)
         return Qnil;
@@ -59,9 +75,9 @@ static VALUE rrdiff_patch(VALUE mod, VALUE old_file, VALUE delta_file, VALUE pat
     rs_stats_t stats;
     rs_result result;
 
-    basisfile = fopen(StringValuePtr(old_file), "rb");
-    deltafile = fopen(StringValuePtr(delta_file), "rb");
-    newfile = fopen(StringValuePtr(patched_file), "wb");
+    basisfile = my_fopen(StringValuePtr(old_file), "rb");
+    deltafile = my_fopen(StringValuePtr(delta_file), "rb");
+    newfile = my_fopen(StringValuePtr(patched_file), "wb");
 
     result = rs_patch_file(basisfile, deltafile, newfile, &stats);
 
